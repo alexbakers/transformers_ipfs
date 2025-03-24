@@ -39,10 +39,10 @@ In Google Colab, you need to manually apply the patch after importing:
 ```python
 # Import and manually apply patch
 import transformers_ipfs
-transformers_ipfs.apply_patch()
+transformers_ipfs.activate()
 
 # Verify patch is active
-print(f"IPFS patch active: {transformers_ipfs.is_active()}")
+print(f"IPFS patch active: {transformers_ipfs.status()}")
 ```
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alexbakers/transformers_ipfs/blob/main/examples/colab/transformers_ipfs_example.ipynb)

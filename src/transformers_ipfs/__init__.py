@@ -57,7 +57,27 @@ _patcher.apply_patch()
 # Function to check if IPFS integration is active
 def is_active():
     """Check if transformers IPFS integration is active"""
+    # Check for patched classes in transformers
+    try:
+        import transformers
+        for name in ['AutoModel', 'AutoConfig']:
+            cls = getattr(transformers, name, None)
+            if cls and hasattr(cls, 'from_pretrained') and hasattr(cls.from_pretrained, '_is_patched'):
+                return True
+    except (ImportError, AttributeError):
+        pass
     return _patcher.is_applied
+
+
+# CLI-compatible function names
+def activate():
+    """Activate the transformers IPFS integration"""
+    return _patcher.apply_patch()
+
+
+def status():
+    """Check if transformers IPFS integration is active (CLI-compatible)"""
+    return is_active()
 
 
 # Ensure cleanup happens on exit
