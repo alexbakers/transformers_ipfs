@@ -24,7 +24,9 @@ class TestTransformersPatcher(unittest.TestCase):
     def test_apply_patch_with_imported_module(self):
         """Test applying the patch when the module is already imported."""
         # Create a mock and patch it manually rather than using the decorator
-        with patch.object(TransformersPatcher, 'patch_module', return_value=True) as mock_patch_module:
+        with patch.object(
+            TransformersPatcher, "patch_module", return_value=True
+        ) as mock_patch_module:
             with patch.dict("sys.modules", {"transformers": MagicMock()}):
                 patcher = TransformersPatcher()
                 result = patcher.apply_patch()
