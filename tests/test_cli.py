@@ -6,13 +6,19 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import pytest
-from transformers_ipfs.cli import activate_command, deactivate_command, main, status_command, test_command
+from transformers_ipfs.cli import (
+    activate_command,
+    deactivate_command,
+    main,
+    status_command,
+    test_command,
+)
 
 
 @pytest.mark.skip(reason="CLI functions have been renamed, tests need to be updated")
 class TestCLI(unittest.TestCase):
     """Test the CLI functionality."""
-    
+
     @patch("transformers_ipfs.cli.open", create=True)
     @patch("pathlib.Path.exists")
     def test_create_pth_file(self, mock_exists, mock_open):
@@ -20,26 +26,28 @@ class TestCLI(unittest.TestCase):
         mock_exists.return_value = True
         mock_file = MagicMock()
         mock_open.return_value.__enter__.return_value = mock_file
-        
+
         from pathlib import Path
+
         # Using activate_command instead of create_pth_file
         result = activate_command()
-        
+
         self.assertTrue(result)
         mock_file.write.assert_called_once_with("import transformers_ipfs\n")
-    
+
     @patch("transformers_ipfs.cli.open", side_effect=PermissionError)
     @patch("pathlib.Path.exists")
     def test_create_pth_file_permission_error(self, mock_exists, mock_open):
         """Test creating a .pth file with permission error."""
         mock_exists.return_value = True
-        
+
         from pathlib import Path
+
         # Using activate_command instead of create_pth_file
         result = activate_command()
-        
+
         self.assertFalse(result)
-    
+
     @patch("transformers_ipfs.cli.Path.unlink")
     @patch("transformers_ipfs.cli.Path.exists")
     @patch("transformers_ipfs.cli.site.getsitepackages")
@@ -48,51 +56,53 @@ class TestCLI(unittest.TestCase):
         mock_getsitepackages.return_value = ["/site1", "/site2"]
         # First file exists, second doesn't
         mock_exists.side_effect = [True, False]
-        
+
         with patch("transformers_ipfs.cli.site.USER_SITE", None):
             # Using deactivate_command instead of remove_pth_file
             result = deactivate_command()
-            
+
             self.assertEqual(result, 1)
             mock_unlink.assert_called_once()
-    
+
     @patch("transformers_ipfs.cli.activate_command")
     @patch("transformers_ipfs.cli.site.USER_SITE")
     @patch("pathlib.Path.exists")
-    def test_install_command_user_site(self, mock_exists, mock_user_site, mock_activate_command):
+    def test_install_command_user_site(
+        self, mock_exists, mock_user_site, mock_activate_command
+    ):
         """Test install command using user site."""
         mock_user_site = "/user/site"
         mock_exists.return_value = True
         mock_activate_command.return_value = True
-        
+
         with patch("builtins.print") as mock_print:
             # Using activate_command directly
             result = activate_command()
-            
+
             self.assertEqual(result, 0)
             mock_print.assert_called_once()
-    
+
     @patch("transformers_ipfs.cli.deactivate_command")
     def test_uninstall_command_success(self, mock_deactivate_command):
         """Test uninstall command success."""
         mock_deactivate_command.return_value = 2
-        
+
         with patch("builtins.print") as mock_print:
             # Using deactivate_command directly
             result = deactivate_command()
-            
+
             self.assertEqual(result, 0)
             mock_print.assert_called_once()
-    
+
     @patch("transformers_ipfs.cli.deactivate_command")
     def test_uninstall_command_failure(self, mock_deactivate_command):
         """Test uninstall command failure."""
         mock_deactivate_command.return_value = 0
-        
+
         with patch("builtins.print") as mock_print:
             # Using deactivate_command directly
             result = deactivate_command()
-            
+
             self.assertEqual(result, 1)
             mock_print.assert_called_once()
 
