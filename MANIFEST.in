@@ -1,0 +1,14 @@
+include LICENSE
+include README.md
+include pyproject.toml
+include setup.py
+include setup.cfg
+
+recursive-include src/transformers_ipfs *.py
+recursive-include src *.py
+
+# Tests
+recursive-include tests *.py
+
+# Exclude
+global-exclude *.py[cod] __pycache__ *.so *.dylib .DS_Store 

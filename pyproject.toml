@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "transformers-ipfs"  # PyPI package name uses hyphens
+version = "0.1.0"
+description = "Enable IPFS model loading for Hugging Face Transformers"
+readme = "README.md"
+authors = [
+    {name = "Alex Baker", email = "alex.baker.fon@protonmail.com"}
+]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.7"
+dependencies = ["requests>=2.25.0"]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "isort",
+    "mypy",
+    "pytest",
+    "flake8",
+]
+
+[project.scripts]
+transformers-ipfs = "transformers_ipfs.cli:main"  # CLI command uses hyphens, but Python module uses underscores
+
+[project.urls]
+"Homepage" = "https://github.com/alexbakers/transformers_ipfs"  # GitHub repo uses underscores
+"Bug Tracker" = "https://github.com/alexbakers/transformers_ipfs/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["transformers_ipfs*", "model_patch*"]  # Python module uses underscores
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+python_version = "3.7"
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
