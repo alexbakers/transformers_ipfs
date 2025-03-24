@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "transformers-ipfs"  # PyPI package name uses hyphens
-version = "0.1.0"
+version = "0.1.1"
 description = "Enable IPFS model loading for Hugging Face Transformers"
 readme = "README.md"
 authors = [

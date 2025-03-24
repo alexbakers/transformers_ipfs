@@ -6,6 +6,7 @@ that patches the Hugging Face Transformers library to display
 information when loading models and tokenizers.
 """
 
+import importlib.util
 import json
 import os
 import re
@@ -16,11 +17,10 @@ import tarfile
 import tempfile
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Type, Union, Callable
+from typing import Any, Callable, Dict, List, Optional, Set, Type, Union
 from urllib.parse import urlparse
 
 import requests
-import importlib.util
 
 from model_patch import BasePatcher
 
