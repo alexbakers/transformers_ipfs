@@ -32,6 +32,21 @@ tokenizer = AutoTokenizer.from_pretrained("ipfs://bafybeichqdarufyutqc7yd43k77fk
 model = AutoModel.from_pretrained("ipfs://bafybeichqdarufyutqc7yd43k77fkxbmeuhhetbihd3g32ghcqvijp6fxi")
 ```
 
+## Google Colab Usage
+
+In Google Colab, you need to manually apply the patch after importing:
+
+```python
+# Import and manually apply patch
+import transformers_ipfs
+transformers_ipfs.apply_patch()
+
+# Verify patch is active
+print(f"IPFS patch active: {transformers_ipfs.is_active()}")
+```
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alexbakers/transformers_ipfs/blob/main/examples/colab/transformers_ipfs_example.ipynb)
+
 ## IPFS Node Connectivity
 
 The `transformers_ipfs` package prioritizes connectivity in the following order:
