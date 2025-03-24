@@ -21,18 +21,17 @@ class TestTransformersPatcher(unittest.TestCase):
         patcher = TransformersPatcher()
         self.assertEqual(patcher.get_emoji(), "🤗")
 
-    @patch("transformers_ipfs.patcher.TransformersPatcher.patch_module")
-    def test_apply_patch_with_imported_module(self, mock_patch_module):
+    def test_apply_patch_with_imported_module(self):
         """Test applying the patch when the module is already imported."""
-        mock_patch_module.return_value = True
+        # Create a mock and patch it manually rather than using the decorator
+        with patch.object(TransformersPatcher, 'patch_module', return_value=True) as mock_patch_module:
+            with patch.dict("sys.modules", {"transformers": MagicMock()}):
+                patcher = TransformersPatcher()
+                result = patcher.apply_patch()
 
-        with patch.dict("sys.modules", {"transformers": MagicMock()}):
-            patcher = TransformersPatcher()
-            result = patcher.apply_patch()
-
-            self.assertTrue(result)
-            self.assertTrue(patcher.is_applied)
-            mock_patch_module.assert_called_once()
+                self.assertTrue(result)
+                self.assertTrue(patcher.is_applied)
+                mock_patch_module.assert_called_once()
 
     def test_create_patched_function(self):
         """Test creating a patched function."""
