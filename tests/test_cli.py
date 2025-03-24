@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from transformers_ipfs.cli import (
     activate_command,
     deactivate_command,
