@@ -15,7 +15,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dependencies = ["requests>=2.25.0"]
 
 [project.optional-dependencies]
@@ -42,7 +42,7 @@ include = ["transformers_ipfs*", "model_patch*"]  # Python module uses underscor
 profile = "black"
 
 [tool.mypy]
-python_version = "3.7"
+python_version = "3.8"
 warn_return_any = true
 warn_unused_configs = true
 
