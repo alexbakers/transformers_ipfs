@@ -16,10 +16,11 @@ import tarfile
 import tempfile
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Type, Union
+from typing import Any, Dict, List, Optional, Set, Type, Union, Callable
 from urllib.parse import urlparse
 
 import requests
+import importlib.util
 
 from model_patch import BasePatcher
 
@@ -719,3 +720,36 @@ class TransformersPatcher(BasePatcher):
             except Exception:
                 # Silently fail during cleanup
                 pass
+
+    def _can_transformers_be_patched(self) -> bool:
+        """Check if transformers can be patched.
+
+        Returns:
+            True if transformers can be patched, False otherwise
+        """
+        # First check if transformers is installed
+        try:
+            # Import transformers without actually importing
+            spec = importlib.util.find_spec("transformers")
+            if spec is None:
+                return False
+
+            # Check if we can access the required classes
+            base_module = importlib.import_module("transformers")
+            for class_name in ["AutoModel", "AutoConfig", "AutoTokenizer"]:
+                if not hasattr(base_module, class_name):
+                    return False
+
+                # Get the class and check if it has from_pretrained
+                cls = getattr(base_module, class_name)
+                if not hasattr(cls, "from_pretrained"):
+                    return False
+
+                # Check if the method is callable
+                method = getattr(cls, "from_pretrained")
+                if not callable(method):
+                    return False
+
+            return True
+        except Exception:
+            return False

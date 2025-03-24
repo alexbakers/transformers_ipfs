@@ -13,7 +13,7 @@ from typing import Any, Callable, Dict, Optional, Tuple, Type
 
 # Track original import function and patched methods for cleanup
 _ORIGINAL_IMPORT = __import__
-_PATCHED_METHODS = {}
+_PATCHED_METHODS: Dict[str, Callable] = {}
 
 
 class BasePatcher(ABC):

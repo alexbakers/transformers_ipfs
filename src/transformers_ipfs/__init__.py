@@ -60,9 +60,14 @@ def is_active():
     # Check for patched classes in transformers
     try:
         import transformers
-        for name in ['AutoModel', 'AutoConfig']:
+
+        for name in ["AutoModel", "AutoConfig"]:
             cls = getattr(transformers, name, None)
-            if cls and hasattr(cls, 'from_pretrained') and hasattr(cls.from_pretrained, '_is_patched'):
+            if (
+                cls
+                and hasattr(cls, "from_pretrained")
+                and hasattr(cls.from_pretrained, "_is_patched")
+            ):
                 return True
     except (ImportError, AttributeError):
         pass
