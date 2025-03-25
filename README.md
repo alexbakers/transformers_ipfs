@@ -13,7 +13,6 @@ Load models directly from IPFS for Hugging Face Transformers.
 ## Installation
 
 ```bash
-# Note: PyPI package names use hyphens
 pip install transformers-ipfs
 transformers-ipfs activate
 ```
@@ -55,7 +54,6 @@ The `transformers_ipfs` package prioritizes connectivity in the following order:
 ## Command Line Interface
 
 ```bash
-# Note: CLI commands use hyphens
 # Activate the auto-loading
 transformers-ipfs activate
 
