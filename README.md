@@ -21,7 +21,8 @@ Once installed and activated, the `transformers_ipfs` integration will be loaded
 
 ## Usage
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alexbakers/transformers_ipfs/blob/main/examples/colab/transformers_ipfs_example.ipynb)
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alexbakers/transformers_ipfs/blob/main/examples/colab/transformers_ipfs_example.ipynb)
+- 🤗 [Demo Space](https://huggingface.co/spaces/alexbakers/transformers_ipfs)
 
 Use the Transformers library with IPFS model URIs:
 
