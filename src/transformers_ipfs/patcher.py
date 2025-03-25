@@ -183,21 +183,8 @@ class TransformersPatcher(BasePatcher):
                                 # Clean up
                                 shutil.rmtree(temp_model_dir)
 
-                                # Check if we need to add required tokenizer files
-                                # GPT-2 tokenizers require merges.txt, but sometimes it's missing
-                                if os.path.exists(
-                                    os.path.join(model_dir, "vocab.json")
-                                ) and not os.path.exists(
-                                    os.path.join(model_dir, "merges.txt")
-                                ):
-                                    print(
-                                        "   🔶 Model has a vocab.json but is missing merges.txt, creating an empty one (required for GPT-2 tokenizers)"
-                                    )
-                                    with open(
-                                        os.path.join(model_dir, "merges.txt"), "w"
-                                    ) as f:
-                                        # Write an empty file - this is often enough for GPT-2 tokenizers
-                                        pass
+                                # Check for potentially missing model files
+                                self._ensure_model_files(model_dir, cid)
 
                                 return model_dir
                             else:
@@ -237,7 +224,11 @@ class TransformersPatcher(BasePatcher):
         model_files = ["model.safetensors", "pytorch_model.bin"]
 
         # Try different IPFS gateways
-        gateways = [f"https://ipfs.io/ipfs/{cid}", f"https://dweb.link/ipfs/{cid}"]
+        gateways = [
+            f"https://ipfs.io/ipfs/{cid}",
+            f"https://dweb.link/ipfs/{cid}",
+            f"https://w3s.link/ipfs/{cid}",
+        ]
 
         successful_gateway = None
         for gateway in gateways:
@@ -431,17 +422,8 @@ class TransformersPatcher(BasePatcher):
             print("❌ Final model directory is missing config.json")
             raise RuntimeError("Model directory is incomplete after download")
 
-        # Check if we need to add required tokenizer files
-        # GPT-2 tokenizers require merges.txt, but sometimes it's missing
-        if os.path.exists(os.path.join(model_dir, "vocab.json")) and not os.path.exists(
-            os.path.join(model_dir, "merges.txt")
-        ):
-            print(
-                "   🔶 Model has a vocab.json but is missing merges.txt, creating an empty one (required for GPT-2 tokenizers)"
-            )
-            with open(os.path.join(model_dir, "merges.txt"), "w") as f:
-                # Write an empty file - this is often enough for GPT-2 tokenizers
-                pass
+        # Check for potentially missing model files
+        self._ensure_model_files(model_dir, cid)
 
         print(f"✅ Model downloaded successfully to {model_dir}")
         return model_dir
@@ -753,3 +735,150 @@ class TransformersPatcher(BasePatcher):
             return True
         except Exception:
             return False
+
+    def _ensure_model_files(self, model_dir: str, cid: str):
+        """Ensure that all necessary model files are present in the model directory.
+
+        This method identifies common patterns of missing files based on model architecture
+        and attempts to download them from the original model or directly from IPFS.
+        """
+        # Extract the original model name from config.json if available
+        original_model = None
+        config_path = os.path.join(model_dir, "config.json")
+        if os.path.exists(config_path):
+            try:
+                with open(config_path, "r", encoding="utf-8") as f:
+                    config_data = json.load(f)
+                    if "_name_or_path" in config_data:
+                        original_model = config_data["_name_or_path"]
+
+                    # Check model architecture to identify potentially missing files
+                    model_type = config_data.get("model_type", "")
+
+                    # Track files that need checking based on model type and existing files
+                    files_to_check = []
+
+                    # For tokenizer files, based on file existence patterns
+                    if os.path.exists(
+                        os.path.join(model_dir, "vocab.json")
+                    ) and not os.path.exists(os.path.join(model_dir, "merges.txt")):
+                        files_to_check.append("merges.txt")
+
+                    # For models with quantization or special configs
+                    if model_type.lower() in [
+                        "gpt2",
+                        "gpt_neo",
+                        "gptj",
+                        "bloom",
+                        "llama",
+                    ] and not os.path.exists(
+                        os.path.join(model_dir, "generation_config.json")
+                    ):
+                        files_to_check.append("generation_config.json")
+
+                    # For sentence transformers that need special tokens
+                    if model_type.lower() in [
+                        "bert",
+                        "roberta",
+                        "distilbert",
+                    ] and not os.path.exists(
+                        os.path.join(model_dir, "special_tokens_map.json")
+                    ):
+                        files_to_check.append("special_tokens_map.json")
+
+                    # Download each missing file
+                    for missing_file in files_to_check:
+                        self._download_missing_file(
+                            model_dir, cid, missing_file, original_model
+                        )
+
+            except Exception as e:
+                print(f"   ⚠️ Error reading config file: {e}")
+                # If we can't extract model info, still check for common tokenizer issues
+                if os.path.exists(
+                    os.path.join(model_dir, "vocab.json")
+                ) and not os.path.exists(os.path.join(model_dir, "merges.txt")):
+                    self._download_missing_file(
+                        model_dir, cid, "merges.txt", original_model
+                    )
+
+    def _download_missing_file(
+        self,
+        model_dir: str,
+        cid: str,
+        filename: str,
+        original_model: Optional[str] = None,
+    ):
+        """Download a missing file from various sources including the original model and IPFS.
+
+        Args:
+            model_dir: Path to the model directory
+            cid: IPFS CID for the model
+            filename: Name of the file to download
+            original_model: Original model name/path if available
+        """
+        print(f"   🔶 Model is missing {filename}, attempting to download")
+        try:
+            # If we have the original model name, try HuggingFace sources first
+            if original_model:
+                # Try the main HF repo
+                print(
+                    f"   📄 Attempting to download {filename} from original model: {original_model}"
+                )
+                file_url = (
+                    f"https://huggingface.co/{original_model}/resolve/main/{filename}"
+                )
+                response = requests.get(file_url, timeout=30)
+
+                if response.status_code == 200:
+                    with open(os.path.join(model_dir, filename), "wb") as f:
+                        f.write(response.content)
+                    print(
+                        f"   ✅ Successfully downloaded {filename} from original model"
+                    )
+                    return
+
+                # Try alternate HF API endpoint
+                alt_url = f"https://s3.amazonaws.com/models.huggingface.co/bert/{original_model}/{filename}"
+                response = requests.get(alt_url, timeout=30)
+
+                if response.status_code == 200:
+                    with open(os.path.join(model_dir, filename), "wb") as f:
+                        f.write(response.content)
+                    print(
+                        f"   ✅ Successfully downloaded {filename} from alternative source"
+                    )
+                    return
+
+            # As a last resort, try to download directly from IPFS via w3s.link
+            print(
+                f"   🔍 Trying to download {filename} directly from IPFS via w3s.link gateway"
+            )
+            w3s_url = f"https://w3s.link/ipfs/{cid}/{filename}"
+            try:
+                response = requests.get(w3s_url, timeout=30)
+                if response.status_code == 200:
+                    with open(os.path.join(model_dir, filename), "wb") as f:
+                        f.write(response.content)
+                    print(
+                        f"   ✅ Successfully downloaded {filename} directly from IPFS via w3s.link"
+                    )
+                    return
+            except Exception as e:
+                print(f"   ⚠️ Error downloading from w3s.link: {e}")
+
+            # If all else fails, create an empty file (last resort)
+            print(f"   ⚠️ Could not download {filename} from any source")
+
+            # For certain files like merges.txt, create empty ones as fallback
+            if filename in ["merges.txt"]:
+                print(f"   ⚠️ Creating an empty {filename} file as fallback")
+                with open(os.path.join(model_dir, filename), "w") as f:
+                    pass
+
+        except Exception as e:
+            print(f"   ⚠️ Error handling {filename}: {e}")
+            # For certain files like merges.txt, create empty ones
+            if filename in ["merges.txt"]:
+                with open(os.path.join(model_dir, filename), "w") as f:
+                    pass
