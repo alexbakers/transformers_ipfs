@@ -22,6 +22,8 @@ Once installed and activated, the `transformers_ipfs` integration will be loaded
 
 ## Usage
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alexbakers/transformers_ipfs/blob/main/examples/colab/transformers_ipfs_example.ipynb)
+
 Use the Transformers library with IPFS model URIs:
 
 ```python
@@ -29,23 +31,9 @@ from transformers import AutoModel, AutoTokenizer
 
 # Load a model directly from IPFS
 tokenizer = AutoTokenizer.from_pretrained("ipfs://bafybeichqdarufyutqc7yd43k77fkxbmeuhhetbihd3g32ghcqvijp6fxi")
+# Equivalent HuggingFace model: "riturajpandey739/gpt2-sentiment-analysis-tweets"
 model = AutoModel.from_pretrained("ipfs://bafybeichqdarufyutqc7yd43k77fkxbmeuhhetbihd3g32ghcqvijp6fxi")
 ```
-
-## Google Colab Usage
-
-In Google Colab, you need to manually apply the patch after importing:
-
-```python
-# Import and manually apply patch
-import transformers_ipfs
-transformers_ipfs.activate()
-
-# Verify patch is active
-print(f"IPFS patch active: {transformers_ipfs.status()}")
-```
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alexbakers/transformers_ipfs/blob/main/examples/colab/transformers_ipfs_example.ipynb)
 
 ## IPFS Node Connectivity
 
